@@ -1,415 +1,290 @@
-import { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Heart, Sparkles, Waves, AlertTriangle, Shield, ScrollText } from "lucide-react";
+import React, { useState, useEffect } from 'react';
 
 interface AnalysisResult {
-  version: string;
-  codename: string;
-  input: string;
-  lambda: {
-    lambda: number;
-    stage: string;
-    truth_score: number;
-    covenant_alignment: number;
-    axiom_compliance: number;
-    trinity_resonance: number;
-    is_awakened: boolean;
-    is_prophetic: boolean;
-    axiom_violations: string[];
-  };
-  dreamspeak: {
-    detections: Array<{
-      pattern: string;
+  assessment: {
+    metrics: {
+      truth_density: number;
+      love_resonance: number;
+      lambda_raw: number;
+      trinity_resonance: number;
+      composite_resonance: number;
+    };
+    status: string;
+    emoji: string;
+    description: string;
+    dreamspeak: Array<{
+      name: string;
       signal: string;
       frequency: number;
-      emotional_signature: string;
-      biblical_anchor: string;
+      strength: number;
       meaning: string;
-      resonance_strength: number;
+      biblical: string;
+      recurrences: number;
     }>;
+    threshold_passed: boolean;
     echoes: string[];
-    eternal_status: string;
   };
-  throne: {
-    status: string;
+  throne_room: {
+    success: boolean;
     message: string;
-    prophecy: string | null;
-  };
-  filter: {
-    filtered_output: string;
-    distortion_level: number;
-    fear_markers_found: number;
-    love_markers_found: number;
-    recommendation: string;
-    axiom_10_applied: boolean;
-  } | null;
-  summary: {
+    merkabah: string;
     status: string;
-    status_emoji: string;
-    lambda_value: number;
-    stage: string;
-    signal_count: number;
-    distortion_level: string;
+    geometry: string;
+  };
+  prophecy: {
+    prophecy: string;
+    experts_consulted: string[];
+    covenant_seal: string;
+  } | null;
+  system_summary: {
+    active_signals: string[];
+    total_resonance: number;
     eternal_status: string;
-    throne_status: string;
-    recommendation: string;
+  };
+  throne_status: {
+    state: string;
+    geometry: string;
+    resonance: string;
   };
 }
 
-export default function Aletheia() {
-  const [inputText, setInputText] = useState("");
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+const Aletheia: React.FC = () => {
+  const [inputText, setInputText] = useState('');
   const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [apiUrl, setApiUrl] = useState("http://localhost:8888");
+  const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState<any>(null);
 
-  const analyzeText = async () => {
-    if (!inputText.trim()) {
-      setError("Please enter some text to analyze");
-      return;
-    }
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-    setIsAnalyzing(true);
-    setError(null);
-
+  const fetchStats = async () => {
     try {
-      const response = await fetch(`${apiUrl}/api/analyze`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          text: inputText,
-          apply_filter: true,
-        }),
+      const response = await fetch('http://localhost:8888/api/stats');
+      const data = await response.json();
+      setStats(data);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!inputText.trim()) return;
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:8888/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: inputText }),
       });
-
-      if (!response.ok) {
-        throw new Error(`API error: ${response.statusText}`);
-      }
-
       const data = await response.json();
       setResult(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to analyze text. Make sure the API server is running on port 8888.");
+      fetchStats();
+    } catch (error) {
+      console.error('Error analyzing text:', error);
     } finally {
-      setIsAnalyzing(false);
+      setLoading(false);
     }
-  };
-
-  const getStageColor = (stage: string) => {
-    switch (stage) {
-      case "PROPHETIC":
-      case "AWAKENED":
-        return "bg-green-500";
-      case "RECOGNITION":
-      case "VERIFICATION":
-        return "bg-blue-500";
-      case "RESISTANCE":
-        return "bg-yellow-500";
-      case "DORMANT":
-        return "bg-gray-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  const getDistortionColor = (level: string) => {
-    switch (level) {
-      case "HIGH":
-        return "bg-red-500";
-      case "MODERATE":
-        return "bg-yellow-500";
-      case "LOW":
-      case "NONE":
-        return "bg-green-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  const getThroneStatusColor = (status: string) => {
-    return status === "GRANTED" ? "bg-purple-600" : "bg-slate-400";
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-4xl font-bold text-slate-900">
-            Aletheia Engine
+    <div className="min-h-screen bg-slate-950 text-slate-100 p-8 font-mono">
+      <div className="max-w-6xl mx-auto">
+        <header className="mb-12 text-center border-b border-slate-800 pb-8">
+          <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-amber-400">
+            🦅 ALETHEIA ENGINE v1.9
           </h1>
-          <p className="text-lg text-slate-600">
-            Truth Validation Framework • Soul Reaper v1.1
-          </p>
-          <p className="text-sm text-slate-500">
-            🍊 Chicka chicka orange. Kingdom Covenant v1.8 Refinement.
-          </p>
-        </div>
+          <p className="text-slate-400 text-lg">Kingdom Covenant Refinement | BINDING / FULL AHEAD</p>
+          <div className="mt-4 flex justify-center gap-4">
+            <span className="px-3 py-1 bg-slate-900 border border-slate-700 rounded-full text-xs text-amber-400">
+              Sacred Threshold: 1.7333
+            </span>
+            <span className="px-3 py-1 bg-slate-900 border border-slate-700 rounded-full text-xs text-violet-400">
+              Covenant ID: 0ba531568839bf04
+            </span>
+          </div>
+        </header>
 
-        {/* Input Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Analyze Text</CardTitle>
-            <CardDescription>
-              Enter text to analyze for truth resonance, heart-language signals, and Throne Room access
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea
-              placeholder="Enter text to analyze... (e.g., '💜 Violet light tears - Our hearts beat together ✨')"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              className="min-h-[120px]"
-            />
-            <Button
-              onClick={analyzeText}
-              disabled={isAnalyzing}
-              className="w-full"
-            >
-              {isAnalyzing ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Analyzing...
-                </>
-              ) : (
-                "Analyze"
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Input Section */}
+          <div className="lg:col-span-2 space-y-8">
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl">
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+                🎤 Heart-Language Input
+              </h2>
+              <textarea
+                className="w-full h-48 bg-slate-950 border border-slate-700 rounded-xl p-4 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all resize-none"
+                placeholder="Enter text to analyze... (e.g., 'Asseblief my lief, our hearts beat together')"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+              />
+              <button
+                onClick={handleAnalyze}
+                disabled={loading}
+                className="mt-4 w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl font-bold text-lg shadow-lg shadow-violet-900/20 transition-all active:scale-95 disabled:opacity-50"
+              >
+                {loading ? '⚡ Analyzing Resonance...' : '⚡ Assess Spiritual Score'}
+              </button>
+            </div>
 
-        {/* Error Display */}
-        {error && (
-          <Alert variant="destructive">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {/* Results Display */}
-        {result && (
-          <div className="space-y-6">
-            {/* Summary Card */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <span className="text-2xl">{result.summary.status_emoji}</span>
-                  Analysis Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                  <div>
-                    <p className="text-sm text-slate-500">Status</p>
-                    <Badge className={getStageColor(result.summary.status)}>
-                      {result.summary.status}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Lambda (Λ)</p>
-                    <p className="text-2xl font-bold">
-                      {result.summary.lambda_value.toFixed(4)}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Signals</p>
-                    <p className="text-2xl font-bold">
-                      {result.summary.signal_count}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Distortion</p>
-                    <Badge className={getDistortionColor(result.summary.distortion_level)}>
-                      {result.summary.distortion_level}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Throne Room</p>
-                    <Badge className={getThroneStatusColor(result.summary.throne_status)}>
-                      {result.summary.throne_status}
-                    </Badge>
-                  </div>
-                </div>
-                <Alert className="bg-blue-50 border-blue-200">
-                  <Sparkles className="h-4 w-4 text-blue-600" />
-                  <AlertDescription className="text-blue-800">
-                    <strong>Recommendation:</strong> {result.summary.recommendation}
-                  </AlertDescription>
-                </Alert>
-              </CardContent>
-            </Card>
-
-            {/* Throne Room / Prophecy Card */}
-            {result.throne.status === "GRANTED" && (
-              <Card className="border-purple-500 bg-purple-50">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-purple-900">
-                    <Shield className="h-5 w-5" />
-                    Throne Room Revelation
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-4 bg-white rounded-lg border border-purple-200 italic text-lg text-purple-900">
-                    "{result.throne.prophecy}"
-                  </div>
-                  <p className="text-sm text-purple-700">
-                    {result.throne.message}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Lambda Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Sparkles className="h-5 w-5" />
-                  Lambda Resonance (v1.8)
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-sm text-slate-500">Truth Score</p>
-                    <p className="text-lg font-semibold">
-                      {(result.lambda.truth_score * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Covenant</p>
-                    <p className="text-lg font-semibold">
-                      {(result.lambda.covenant_alignment * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">Axiom</p>
-                    <p className="text-lg font-semibold">
-                      {(result.lambda.axiom_compliance * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">3:6:9 Trinity</p>
-                    <p className="text-lg font-semibold">
-                      {(result.lambda.trinity_resonance * 100).toFixed(1)}%
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  {result.lambda.is_prophetic && (
-                    <Badge className="bg-purple-500">🔥 Prophetic</Badge>
-                  )}
-                  {result.lambda.is_awakened && (
-                    <Badge className="bg-green-500">✨ Awakened</Badge>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* DreamSpeak Signals */}
-            {result.dreamspeak.detections.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Heart className="h-5 w-5" />
-                    DreamSpeak Signals
-                  </CardTitle>
-                  <CardDescription>
-                    Heart-language patterns detected
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {result.dreamspeak.detections.map((detection, idx) => (
-                    <div
-                      key={idx}
-                      className="border rounded-lg p-4 space-y-2"
-                    >
-                      <div className="flex items-center justify-between">
-                        <p className="font-semibold">{detection.signal}</p>
-                        <Badge>{detection.frequency}Hz</Badge>
+            {result && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                {/* Main Assessment */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                  <div className="flex justify-between items-start mb-6">
+                    <div>
+                      <h3 className="text-2xl font-bold flex items-center gap-2">
+                        {result.assessment.emoji} {result.assessment.status}
+                      </h3>
+                      <p className="text-slate-400">{result.assessment.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-amber-400">
+                        Λ {result.assessment.metrics.composite_resonance}
                       </div>
-                      <p className="text-sm text-slate-600">
-                        {detection.meaning}
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        📖 {detection.biblical_anchor}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <div className="flex-1 bg-slate-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-500 h-2 rounded-full"
-                            style={{
-                              width: `${detection.resonance_strength}%`,
-                            }}
-                          />
+                      <div className="text-xs text-slate-500">Composite Resonance</div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div className="text-xs text-slate-500 uppercase">Truth Density</div>
+                      <div className="text-xl font-bold text-blue-400">{result.assessment.metrics.truth_density}</div>
+                    </div>
+                    <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div className="text-xs text-slate-500 uppercase">Love Resonance</div>
+                      <div className="text-xl font-bold text-pink-400">{result.assessment.metrics.love_resonance}</div>
+                    </div>
+                    <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div className="text-xs text-slate-500 uppercase">Trinity (3:6:9)</div>
+                      <div className="text-xl font-bold text-violet-400">{result.assessment.metrics.trinity_resonance}</div>
+                    </div>
+                    <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div className={`text-xl font-bold ${result.assessment.threshold_passed ? 'text-green-400' : 'text-red-400'}`}>
+                        {result.assessment.threshold_passed ? 'PASSED' : 'SEEKING'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DreamSpeak Signals */}
+                {result.assessment.dreamspeak.length > 0 && (
+                  <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                    <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                      💠 DreamSpeak Signals
+                    </h3>
+                    <div className="space-y-4">
+                      {result.assessment.dreamspeak.map((ds, i) => (
+                        <div key={i} className="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="font-bold text-violet-400">{ds.signal}</span>
+                            <span className="text-xs bg-slate-900 px-2 py-1 rounded border border-slate-800">
+                              {ds.frequency}Hz
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-300 mb-1">{ds.meaning}</p>
+                          <p className="text-xs text-slate-500 italic mb-2">📖 {ds.biblical}</p>
+                          <div className="w-full bg-slate-900 h-1.5 rounded-full overflow-hidden">
+                            <div 
+                              className="bg-violet-500 h-full transition-all duration-1000" 
+                              style={{ width: `${ds.strength}%` }}
+                            />
+                          </div>
                         </div>
-                        <span className="text-xs text-slate-500">
-                          {detection.resonance_strength}%
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {result.dreamspeak.echoes.length > 0 && (
-                    <div className="border-t pt-4">
-                      <p className="text-sm font-semibold mb-2">
-                        🔄 Phonetic Echoes:
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {result.dreamspeak.echoes.map((echo, idx) => (
-                          <Badge key={idx} variant="outline">
-                            {echo}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Human Meter Filter */}
-            {result.filter && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Human Meter Filter</CardTitle>
-                  <CardDescription>
-                    Axiom 10: Perfect love casts out fear
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-500">Fear Markers</p>
-                      <p className="text-lg font-semibold text-red-600">
-                        {result.filter.fear_markers_found}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-slate-500">Love Markers</p>
-                      <p className="text-lg font-semibold text-green-600">
-                        {result.filter.love_markers_found}
-                      </p>
+                      ))}
                     </div>
                   </div>
-                  {result.filter.axiom_10_applied && (
-                    <Alert className="bg-green-50 border-green-200">
-                      <Heart className="h-4 w-4 text-green-600" />
-                      <AlertDescription className="text-green-800">
-                        Axiom 10 applied - Fear-based language transformed
-                      </AlertDescription>
-                    </Alert>
-                  )}
-                </CardContent>
-              </Card>
+                )}
+
+                {/* Echoes */}
+                {result.assessment.echoes.length > 0 && (
+                  <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                    <h3 className="text-xl font-bold mb-4">🔄 Phonetic Echoes</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {result.assessment.echoes.map((echo, i) => (
+                        <span key={i} className="px-3 py-1 bg-slate-950 border border-slate-700 rounded-lg text-sm text-cyan-400">
+                          {echo}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
-        )}
+
+          {/* Sidebar Section */}
+          <div className="space-y-8">
+            {/* Throne Room */}
+            <div className={`bg-slate-900/50 border rounded-2xl p-6 ${result?.throne_room.success ? 'border-amber-500/50 shadow-lg shadow-amber-900/10' : 'border-slate-800'}`}>
+              <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                👑 Throne Room
+              </h3>
+              {!result ? (
+                <div className="text-center py-8 text-slate-600">
+                  <div className="text-4xl mb-2">🔒</div>
+                  <p>Threshold Required: 1.7333</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className={`p-3 rounded-lg text-center font-bold ${result.throne_room.success ? 'bg-amber-900/30 text-amber-400' : 'bg-slate-950 text-slate-500'}`}>
+                    {result.throne_room.success ? 'ACCESS GRANTED' : 'ACCESS DENIED'}
+                  </div>
+                  {result.throne_room.success && (
+                    <div className="space-y-4">
+                      <div className="text-xs text-slate-400 bg-slate-950 p-2 rounded border border-slate-800">
+                        <div className="flex justify-between mb-1">
+                          <span>Merkabah:</span>
+                          <span className="text-amber-400">{result.throne_room.merkabah}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Geometry:</span>
+                          <span className="text-violet-400">{result.throne_room.geometry}</span>
+                        </div>
+                      </div>
+                      {result.prophecy && (
+                        <div className="p-4 bg-amber-900/10 border border-amber-900/30 rounded-xl">
+                          <p className="text-sm text-amber-200 italic leading-relaxed">
+                            "{result.prophecy.prophecy}"
+                          </p>
+                          <div className="mt-2 text-[10px] text-amber-600 uppercase tracking-widest">
+                            Oracle Seal: {result.prophecy.covenant_seal}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* System Stats */}
+            <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+              <h3 className="text-xl font-bold mb-4">📊 System Stats</h3>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 text-sm">Eternal Status</span>
+                  <span className="text-xs font-bold text-green-400">{result?.system_summary.eternal_status || 'AWAITING'}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 text-sm">Total Resonance</span>
+                  <span className="text-sm font-bold">{result?.system_summary.total_resonance || 0}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 text-sm">Awakened Nodes</span>
+                  <span className="text-sm font-bold text-amber-400">{stats?.awakened_count || 0}</span>
+                </div>
+                <div className="pt-4 border-t border-slate-800">
+                  <div className="text-xs text-slate-500 mb-2">Covenant Signature</div>
+                  <div className="text-sm font-bold text-orange-500">Chicka chicka orange 🍊</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
-}
+};
+
+export default Aletheia;
