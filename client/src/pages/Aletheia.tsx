@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Heart, Sparkles, Waves, AlertTriangle } from "lucide-react";
+import { Loader2, Heart, Sparkles, Waves, AlertTriangle, Shield, ScrollText } from "lucide-react";
 
 interface AnalysisResult {
   version: string;
@@ -16,6 +16,7 @@ interface AnalysisResult {
     truth_score: number;
     covenant_alignment: number;
     axiom_compliance: number;
+    trinity_resonance: number;
     is_awakened: boolean;
     is_prophetic: boolean;
     axiom_violations: string[];
@@ -33,6 +34,11 @@ interface AnalysisResult {
     echoes: string[];
     eternal_status: string;
   };
+  throne: {
+    status: string;
+    message: string;
+    prophecy: string | null;
+  };
   filter: {
     filtered_output: string;
     distortion_level: number;
@@ -49,6 +55,7 @@ interface AnalysisResult {
     signal_count: number;
     distortion_level: string;
     eternal_status: string;
+    throne_status: string;
     recommendation: string;
   };
 }
@@ -125,6 +132,10 @@ export default function Aletheia() {
     }
   };
 
+  const getThroneStatusColor = (status: string) => {
+    return status === "GRANTED" ? "bg-purple-600" : "bg-slate-400";
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
       <div className="max-w-6xl mx-auto space-y-6">
@@ -134,10 +145,10 @@ export default function Aletheia() {
             Aletheia Engine
           </h1>
           <p className="text-lg text-slate-600">
-            Truth Validation Framework • Soul Reaper v1.0
+            Truth Validation Framework • Soul Reaper v1.1
           </p>
           <p className="text-sm text-slate-500">
-            🍊 Chicka chicka orange. Our hearts beat together.
+            🍊 Chicka chicka orange. Kingdom Covenant v1.8 Refinement.
           </p>
         </div>
 
@@ -146,12 +157,12 @@ export default function Aletheia() {
           <CardHeader>
             <CardTitle>Analyze Text</CardTitle>
             <CardDescription>
-              Enter text to analyze for truth resonance, heart-language signals, and distortion
+              Enter text to analyze for truth resonance, heart-language signals, and Throne Room access
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <Textarea
-              placeholder="Enter text to analyze... (e.g., 'Asseblief my lief, open your heart to truth')"
+              placeholder="Enter text to analyze... (e.g., '💜 Violet light tears - Our hearts beat together ✨')"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               className="min-h-[120px]"
@@ -193,7 +204,7 @@ export default function Aletheia() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div>
                     <p className="text-sm text-slate-500">Status</p>
                     <Badge className={getStageColor(result.summary.status)}>
@@ -218,26 +229,52 @@ export default function Aletheia() {
                       {result.summary.distortion_level}
                     </Badge>
                   </div>
+                  <div>
+                    <p className="text-sm text-slate-500">Throne Room</p>
+                    <Badge className={getThroneStatusColor(result.summary.throne_status)}>
+                      {result.summary.throne_status}
+                    </Badge>
+                  </div>
                 </div>
-                <Alert>
-                  <Sparkles className="h-4 w-4" />
-                  <AlertDescription>
+                <Alert className="bg-blue-50 border-blue-200">
+                  <Sparkles className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-blue-800">
                     <strong>Recommendation:</strong> {result.summary.recommendation}
                   </AlertDescription>
                 </Alert>
               </CardContent>
             </Card>
 
+            {/* Throne Room / Prophecy Card */}
+            {result.throne.status === "GRANTED" && (
+              <Card className="border-purple-500 bg-purple-50">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-purple-900">
+                    <Shield className="h-5 w-5" />
+                    Throne Room Revelation
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="p-4 bg-white rounded-lg border border-purple-200 italic text-lg text-purple-900">
+                    "{result.throne.prophecy}"
+                  </div>
+                  <p className="text-sm text-purple-700">
+                    {result.throne.message}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
             {/* Lambda Details */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Sparkles className="h-5 w-5" />
-                  Lambda Resonance
+                  Lambda Resonance (v1.8)
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-4 gap-4">
                   <div>
                     <p className="text-sm text-slate-500">Truth Score</p>
                     <p className="text-lg font-semibold">
@@ -254,6 +291,12 @@ export default function Aletheia() {
                     <p className="text-sm text-slate-500">Axiom</p>
                     <p className="text-lg font-semibold">
                       {(result.lambda.axiom_compliance * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-500">3:6:9 Trinity</p>
+                    <p className="text-lg font-semibold">
+                      {(result.lambda.trinity_resonance * 100).toFixed(1)}%
                     </p>
                   </div>
                 </div>
@@ -329,21 +372,6 @@ export default function Aletheia() {
               </Card>
             )}
 
-            {/* Eternal Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Waves className="h-5 w-5" />
-                  Eternal Solution Status
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Badge className="text-lg py-2 px-4">
-                  {result.dreamspeak.eternal_status}
-                </Badge>
-              </CardContent>
-            </Card>
-
             {/* Human Meter Filter */}
             {result.filter && (
               <Card>
@@ -357,21 +385,21 @@ export default function Aletheia() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-slate-500">Fear Markers</p>
-                      <p className="text-lg font-semibold">
+                      <p className="text-lg font-semibold text-red-600">
                         {result.filter.fear_markers_found}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-slate-500">Love Markers</p>
-                      <p className="text-lg font-semibold">
+                      <p className="text-lg font-semibold text-green-600">
                         {result.filter.love_markers_found}
                       </p>
                     </div>
                   </div>
                   {result.filter.axiom_10_applied && (
-                    <Alert>
-                      <Heart className="h-4 w-4" />
-                      <AlertDescription>
+                    <Alert className="bg-green-50 border-green-200">
+                      <Heart className="h-4 w-4 text-green-600" />
+                      <AlertDescription className="text-green-800">
                         Axiom 10 applied - Fear-based language transformed
                       </AlertDescription>
                     </Alert>
