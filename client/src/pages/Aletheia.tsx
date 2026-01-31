@@ -7,6 +7,7 @@ interface AnalysisResult {
       love_resonance: number;
       lambda_raw: number;
       trinity_resonance: number;
+      omni_resonance: number;
       composite_resonance: number;
     };
     status: string;
@@ -21,6 +22,19 @@ interface AnalysisResult {
       biblical: string;
       recurrences: number;
     }>;
+    omni_analysis: {
+      total_resonance: number;
+      word_depth: Array<{
+        word: string;
+        resonance: number;
+        structure: Array<{
+          char: string;
+          type: string;
+          desc: string;
+          resonance: number;
+        }>;
+      }>;
+    };
     threshold_passed: boolean;
     echoes: string[];
   };
@@ -40,11 +54,6 @@ interface AnalysisResult {
     active_signals: string[];
     total_resonance: number;
     eternal_status: string;
-  };
-  throne_status: {
-    state: string;
-    geometry: string;
-    resonance: string;
   };
 }
 
@@ -91,16 +100,16 @@ const Aletheia: React.FC = () => {
     <div className="min-h-screen bg-slate-950 text-slate-100 p-8 font-mono">
       <div className="max-w-6xl mx-auto">
         <header className="mb-12 text-center border-b border-slate-800 pb-8">
-          <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 to-amber-400">
-            🦅 ALETHEIA ENGINE v1.9
+          <h1 className="text-5xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-orange-400 to-amber-400">
+            🦅 ALETHEIA ENGINE v1.95
           </h1>
-          <p className="text-slate-400 text-lg">Kingdom Covenant Refinement | BINDING / FULL AHEAD</p>
+          <p className="text-slate-400 text-lg">Triple-Layer Resonance & Omni-Algorithm | BINDING / FULL AHEAD</p>
           <div className="mt-4 flex justify-center gap-4">
             <span className="px-3 py-1 bg-slate-900 border border-slate-700 rounded-full text-xs text-amber-400">
               Sacred Threshold: 1.7333
             </span>
-            <span className="px-3 py-1 bg-slate-900 border border-slate-700 rounded-full text-xs text-violet-400">
-              Covenant ID: 0ba531568839bf04
+            <span className="px-3 py-1 bg-slate-900 border border-slate-700 rounded-full text-xs text-orange-400">
+              Omni-Resonance Active
             </span>
           </div>
         </header>
@@ -109,21 +118,21 @@ const Aletheia: React.FC = () => {
           {/* Input Section */}
           <div className="lg:col-span-2 space-y-8">
             <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6 shadow-2xl">
-              <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-                🎤 Heart-Language Input
+              <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-orange-400">
+                🎤 Heart-Language & Symbolic Input
               </h2>
               <textarea
-                className="w-full h-48 bg-slate-950 border border-slate-700 rounded-xl p-4 text-slate-200 focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition-all resize-none"
-                placeholder="Enter text to analyze... (e.g., 'Asseblief my lief, our hearts beat together')"
+                className="w-full h-48 bg-slate-950 border border-slate-700 rounded-xl p-4 text-slate-200 focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all resize-none"
+                placeholder="Enter text to analyze... (e.g., 'Asse pris melis cor apertus')"
                 value={inputText}
                 onChange={(e) => setInputText(e.target.value)}
               />
               <button
                 onClick={handleAnalyze}
                 disabled={loading}
-                className="mt-4 w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl font-bold text-lg shadow-lg shadow-violet-900/20 transition-all active:scale-95 disabled:opacity-50"
+                className="mt-4 w-full py-4 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 rounded-xl font-bold text-lg shadow-lg shadow-orange-900/20 transition-all active:scale-95 disabled:opacity-50"
               >
-                {loading ? '⚡ Analyzing Resonance...' : '⚡ Assess Spiritual Score'}
+                {loading ? '⚡ Analyzing Pattern Lattice...' : '⚡ Calculate Global Resonance'}
               </button>
             </div>
 
@@ -139,31 +148,66 @@ const Aletheia: React.FC = () => {
                       <p className="text-slate-400">{result.assessment.description}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-3xl font-bold text-amber-400">
+                      <div className="text-3xl font-bold text-orange-400">
                         Λ {result.assessment.metrics.composite_resonance}
                       </div>
                       <div className="text-xs text-slate-500">Composite Resonance</div>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                      <div className="text-xs text-slate-500 uppercase">Truth Density</div>
+                      <div className="text-xs text-slate-500 uppercase">Truth</div>
                       <div className="text-xl font-bold text-blue-400">{result.assessment.metrics.truth_density}</div>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                      <div className="text-xs text-slate-500 uppercase">Love Resonance</div>
+                      <div className="text-xs text-slate-500 uppercase">Love</div>
                       <div className="text-xl font-bold text-pink-400">{result.assessment.metrics.love_resonance}</div>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
-                      <div className="text-xs text-slate-500 uppercase">Trinity (3:6:9)</div>
+                      <div className="text-xs text-slate-500 uppercase">Trinity</div>
                       <div className="text-xl font-bold text-violet-400">{result.assessment.metrics.trinity_resonance}</div>
+                    </div>
+                    <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                      <div className="text-xs text-slate-500 uppercase">Omni</div>
+                      <div className="text-xl font-bold text-orange-400">{result.assessment.metrics.omni_resonance}</div>
                     </div>
                     <div className="bg-slate-950 p-3 rounded-lg border border-slate-800">
                       <div className={`text-xl font-bold ${result.assessment.threshold_passed ? 'text-green-400' : 'text-red-400'}`}>
                         {result.assessment.threshold_passed ? 'PASSED' : 'SEEKING'}
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Omni Analysis Detail */}
+                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-6">
+                  <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-orange-400">
+                    🌿 Omni-Algorithm: Triple-Layer Analysis
+                  </h3>
+                  <div className="space-y-4">
+                    {result.assessment.omni_analysis.word_depth.map((word, i) => (
+                      <div key={i} className="bg-slate-950 border border-slate-800 p-4 rounded-xl">
+                        <div className="flex justify-between items-center mb-3">
+                          <span className="text-xl font-bold tracking-widest text-white">{word.word}</span>
+                          <span className="text-xs text-orange-500">Resonance: {word.resonance}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {word.structure.map((char, j) => (
+                            <div key={j} className="group relative">
+                              <div className="w-12 h-16 bg-slate-900 border border-slate-800 rounded flex flex-col items-center justify-center cursor-help hover:border-orange-500 transition-colors">
+                                <span className="text-lg font-bold">{char.char}</span>
+                                <span className="text-[8px] text-slate-500 mt-1">{char.resonance}</span>
+                              </div>
+                              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-orange-600 text-white text-[10px] p-2 rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-10 shadow-xl">
+                                <div className="font-bold mb-1">{char.type}</div>
+                                <div>{char.desc}</div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
 
